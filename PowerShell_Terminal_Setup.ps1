@@ -3,9 +3,7 @@ cd  $env:USERPROFILE
 Set-ExecutionPolicy Unrestricted -Scope CurrentUser
 
 #Run as admin
-Invoke-WebRequest -Uri https://raw.githubusercontent.com/asheroto/winget-installer/master/winget-install.ps1 -OutFile .\winget-install.ps1
-
-.\winget-install.ps1
+irm https://raw.githubusercontent.com/asheroto/winget-installer/master/winget-install.ps1 | iex 
 
 
 #iwr -useb get.scoop.sh | iex
@@ -49,37 +47,46 @@ if(-not (Test-Path("$Env:USERPROFILE\.config\powershell")))
 {
     New-Item -Path "$Env:USERPROFILE\.config\powershell" -ItemType Directory
 }
-
+#Create new profile
 New-Item $PROFILE
 
+#Add path varible to profile script
 Add-Content -Path $PROFILE -Value '$env:Path += ";$env:USERPROFILE\AppData\Local\Programs\oh-my-posh\bin"'
 
+#Add path user script to powershell profile
 Add-Content -Path $PROFILE -Value ".config\powershell\user_profile.ps1"
 
+#Return to user profile folder
 cd  $env:USERPROFILE
 
+#Download Nerd Fonts , only root
 git clone --filter=blob:none --sparse https://github.com/ryanoasis/nerd-fonts.git
 
 cd nerd-fonts
 
+#Download CascadiaCode font
 git sparse-checkout add patched-fonts/CascadiaCode
 
+#Install CascadiaCode font
 ./install.ps1 CascadiaCode -WindowsCompatibleOnly
 
+#Return to user profile folder
 cd  $env:USERPROFILE
 
-if(-not (Test-Path("$Env:USERPROFILE\nerd-fonts")))
+#Remove Nerd Fonts git repo locally
+if((Test-Path("$Env:USERPROFILE\nerd-fonts")))
 {
     Remove-Item -Path "$Env:USERPROFILE\nerd-fonts" -Force
 }
 
-if(-not (Test-Path("$Env:USERPROFILE\install.ps1")))
+#Remove Scoop installation script
+if((Test-Path("$Env:USERPROFILE\install.ps1")))
 {
     Remove-Item -Path "$Env:USERPROFILE\install.ps1" -Force
 }
 
-
-if(-not (Test-Path("$Env:USERPROFILE\winget-install.ps1")))
+#Remove winget installation script
+if((Test-Path("$Env:USERPROFILE\winget-install.ps1")))
 {
     Remove-Item -Path "$Env:USERPROFILE\winget-install.ps1" -Force
 }
@@ -88,8 +95,8 @@ if(-not (Test-Path("$Env:USERPROFILE\winget-install.ps1")))
 ## Fix font and background of Terminal ##
 $font = 'CaskaydiaCove NF Mono'
 $file = "$Env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
-$bgPath = "$Env:USERPROFILE\.config\powershell\TerminalBackground.jpg"
-$bgPath = $bgPath.Replace("\","\\")
+$bgPathNormal = "$Env:USERPROFILE\.config\powershell\TerminalBackground.jpg"
+$bgPath = $bgPathNormal.Replace("\","\\")
 
 $default_regex = '(?<="defaults": {},)'
 if((Get-Content $file) -match $default_regex)
@@ -127,3 +134,14 @@ else
 
 }
 ##
+
+#Add PowerShell Profile Script
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/canix1/TerminalTheme/main/user_profile.ps1 -OutFile "$Env:USERPROFILE\.config\powershell\user_profile.ps1" 
+
+#Download background image
+Invoke-WebRequest -Uri https://github.com/canix1/TerminalTheme/raw/main/TerminalBackground.jpg -OutFile $bgPathNormal
+
+#Download oh-my-posh theme
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/canix1/TerminalTheme/main/canix.omp.json -Outfile "$Env:USERPROFILE\.config\powershell\canix.omp.json"
+
+exit
